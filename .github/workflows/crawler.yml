@@ -44,7 +44,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 jobs:
@@ -92,24 +92,6 @@ jobs:
               echo "✅ Trial: ${DAYS_LEFT} days left. Run 'Check In' before expiry to renew."
             fi
           fi
-
-
-      # --------------------------------------------------------------------------------
-      # 🚦 TRAFFIC CONTROL / 流量控制
-      # --------------------------------------------------------------------------------
-      # EN: Generates a random delay between 1 and 300 seconds (5 minutes).
-      #     Critical for load balancing.
-      #
-      # CN: 生成 1 到 300 秒（5分钟）之间的随机延迟。
-      #     这对负载均衡至关重要。
-      # - name: Random Delay (Traffic Control)
-      #   if: success()
-      #   run: |
-      #     echo "🎲 Traffic Control: Generating random delay..."
-      #     DELAY=$(( ( RANDOM % 300 )  + 1 ))
-      #     echo "⏸️  Sleeping for ${DELAY} seconds to spread the load..."
-      #     sleep ${DELAY}s
-      #     echo "▶️  Delay finished. Starting crawler..."
 
       - name: Set up Python
         if: success()
@@ -167,3 +149,16 @@ jobs:
           S3_REGION: ${{ secrets.S3_REGION }}
           GITHUB_ACTIONS: true
         run: python -m trendradar
+
+      - name: Commit and push data
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/ index.html 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update news data [skip ci] - $(date '+%Y-%m-%d %H:%M')"
+            git push
+          fi
