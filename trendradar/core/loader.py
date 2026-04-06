@@ -6,6 +6,7 @@
 """
 
 import os
+import copy
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -181,7 +182,36 @@ def _load_weight_config(config_data: Dict) -> Dict:
     }
 
 
-def _load_rss_config(config_data: Dict) -> Dict:
+def _load_rss_feeds(config_data: Dict, config_path: Optional[str] = None) -> list:
+    """加载 RSS 源列表，支持从外部 YAML 文件引用"""
+    rss = config_data.get("rss", {})
+    feeds = rss.get("feeds", [])
+    feeds_file = rss.get("feeds_file", "").strip()
+
+    if not feeds_file:
+        return feeds
+
+    config_dir = Path(config_path).parent if config_path else Path("config")
+    feeds_path = (config_dir / feeds_file).resolve()
+
+    if not feeds_path.exists():
+        print(f"[警告] RSS feeds_file 不存在: {feeds_path}，回退到 config.yaml 内置 feeds")
+        return feeds
+
+    with open(feeds_path, "r", encoding="utf-8") as f:
+        external_config = yaml.safe_load(f) or {}
+
+    external_rss = external_config.get("rss", {})
+    external_feeds = external_rss.get("feeds", [])
+    if not isinstance(external_feeds, list):
+        print(f"[警告] RSS feeds_file 格式错误: {feeds_path}，回退到 config.yaml 内置 feeds")
+        return feeds
+
+    print(f"RSS 源配置加载成功: {feeds_path} ({len(external_feeds)} 个源)")
+    return copy.deepcopy(external_feeds)
+
+
+def _load_rss_config(config_data: Dict, config_path: Optional[str] = None) -> Dict:
     """加载 RSS 配置"""
     rss = config_data.get("rss", {})
     advanced = config_data.get("advanced", {})
@@ -212,7 +242,7 @@ def _load_rss_config(config_data: Dict) -> Dict:
         "TIMEOUT": advanced_rss.get("timeout", 15),
         "USE_PROXY": advanced_rss.get("use_proxy", False),
         "PROXY_URL": rss_proxy_url,
-        "FEEDS": rss.get("feeds", []),
+        "FEEDS": _load_rss_feeds(config_data, config_path),
         "FRESHNESS_FILTER": {
             "ENABLED": freshness_filter.get("enabled", True),  # 默认启用
             "MAX_AGE_DAYS": max_age_days,
@@ -579,7 +609,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     config["PLATFORMS"] = platforms_config.get("sources", [])
 
     # RSS 配置
-    config["RSS"] = _load_rss_config(config_data)
+    config["RSS"] = _load_rss_config(config_data, config_path)
 
     # AI 模型共享配置
     config["AI"] = _load_ai_config(config_data)
