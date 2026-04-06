@@ -969,7 +969,7 @@ frequency_words.txt 文件增加了一个【必须词】功能，使用 + 号
 
 ### **RSS 订阅源支持**（v4.5.0 新增）
 
-默认模板已启用 `rss.feeds_file: "custom/rss_feeds.yaml"`，会直接加载仓库内维护的完整 RSS 源清单；如需缩减范围，再改回 `config/config.yaml` 里的 `feeds` 列表即可。
+默认模板已启用 `rss.feeds_file: "custom/rss_feeds.yaml"`，会加载仓库内维护的完整 RSS 源清单；同时通过 `rss.enabled_ids_file: "custom/rss_enabled_default.txt"` 仅默认启用一批稳定高质量源，其余源保留在清单里，按需打开即可。
 
 支持 RSS/Atom 订阅源抓取，按关键词分组统计（与热榜格式一致）：
 

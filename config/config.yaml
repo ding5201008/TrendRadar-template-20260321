@@ -113,6 +113,7 @@ rss:
   # - 正整数：覆盖全局设置，只推送此天数内的文章
   # - 0：禁用此频道的新鲜度过滤，推送所有文章
   feeds_file: "custom/rss_feeds.yaml"  # 默认加载完整 RSS 源清单（252 个源）
+  enabled_ids_file: "custom/rss_enabled_default.txt"  # 默认只启用一批稳定高质量源，其余按需打开
   feeds:
     - id: "hacker-news"
       name: "Hacker News"
