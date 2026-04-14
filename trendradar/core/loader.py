@@ -6,6 +6,7 @@
 """
 
 import os
+import copy
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -181,7 +182,56 @@ def _load_weight_config(config_data: Dict) -> Dict:
     }
 
 
-def _load_rss_config(config_data: Dict) -> Dict:
+def _load_rss_feeds(config_data: Dict, config_path: Optional[str] = None) -> list:
+    """加载 RSS 源列表，支持从外部 YAML 文件引用和默认启用名单过滤。"""
+    rss = config_data.get("rss", {})
+    feeds = rss.get("feeds", [])
+    feeds_file = rss.get("feeds_file", "").strip()
+    enabled_ids_file = rss.get("enabled_ids_file", "").strip()
+
+    if not feeds_file:
+        return feeds
+
+    config_dir = Path(config_path).parent if config_path else Path("config")
+    feeds_path = (config_dir / feeds_file).resolve()
+
+    if not feeds_path.exists():
+        print(f"[警告] RSS feeds_file 不存在: {feeds_path}，回退到 config.yaml 内置 feeds")
+        return feeds
+
+    with open(feeds_path, "r", encoding="utf-8") as f:
+        external_config = yaml.safe_load(f) or {}
+
+    external_rss = external_config.get("rss", {})
+    external_feeds = external_rss.get("feeds", [])
+    if not isinstance(external_feeds, list):
+        print(f"[警告] RSS feeds_file 格式错误: {feeds_path}，回退到 config.yaml 内置 feeds")
+        return feeds
+
+    resolved_feeds = copy.deepcopy(external_feeds)
+
+    if enabled_ids_file:
+        enabled_ids_path = (config_dir / enabled_ids_file).resolve()
+        if not enabled_ids_path.exists():
+            print(f"[警告] RSS enabled_ids_file 不存在: {enabled_ids_path}，保留 feeds_file 中原始启用状态")
+        else:
+            with open(enabled_ids_path, "r", encoding="utf-8") as f:
+                enabled_ids = {
+                    line.strip()
+                    for line in f
+                    if line.strip() and not line.strip().startswith("#")
+                }
+
+            for feed in resolved_feeds:
+                feed["enabled"] = feed.get("id") in enabled_ids
+
+            print(f"RSS 默认启用名单加载成功: {enabled_ids_path} ({len(enabled_ids)} 个源)")
+
+    print(f"RSS 源配置加载成功: {feeds_path} ({len(resolved_feeds)} 个源)")
+    return resolved_feeds
+
+
+def _load_rss_config(config_data: Dict, config_path: Optional[str] = None) -> Dict:
     """加载 RSS 配置"""
     rss = config_data.get("rss", {})
     advanced = config_data.get("advanced", {})
@@ -212,7 +262,7 @@ def _load_rss_config(config_data: Dict) -> Dict:
         "TIMEOUT": advanced_rss.get("timeout", 15),
         "USE_PROXY": advanced_rss.get("use_proxy", False),
         "PROXY_URL": rss_proxy_url,
-        "FEEDS": rss.get("feeds", []),
+        "FEEDS": _load_rss_feeds(config_data, config_path),
         "FRESHNESS_FILTER": {
             "ENABLED": freshness_filter.get("enabled", True),  # 默认启用
             "MAX_AGE_DAYS": max_age_days,
@@ -579,7 +629,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     config["PLATFORMS"] = platforms_config.get("sources", [])
 
     # RSS 配置
-    config["RSS"] = _load_rss_config(config_data)
+    config["RSS"] = _load_rss_config(config_data, config_path)
 
     # AI 模型共享配置
     config["AI"] = _load_ai_config(config_data)
