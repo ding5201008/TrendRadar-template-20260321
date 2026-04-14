@@ -63,9 +63,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"<font color='grey'>📰 [{title_data['source_name']}]</font> {title_prefix}{formatted_title}"
+            result = f"<font color='grey'>[{title_data['source_name']}]</font> {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"<font color='blue'>🏷️ [{keyword}]</font> {title_prefix}{formatted_title}"
+            result = f"<font color='blue'>[{keyword}]</font> {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -87,9 +87,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"📰 [{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"🏷️ [{keyword}] {title_prefix}{formatted_title}"
+            result = f"[{keyword}] {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -112,9 +112,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"📰 [{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"🏷️ [{keyword}] {title_prefix}{formatted_title}"
+            result = f"[{keyword}] {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -136,9 +136,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"📰 [{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"<b>🏷️ [{html_escape(keyword)}]</b> {title_prefix}{formatted_title}"
+            result = f"<b>[{html_escape(keyword)}]</b> {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -160,9 +160,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"📰 [{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"🏷️ [{keyword}] {title_prefix}{formatted_title}"
+            result = f"[{keyword}] {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -186,9 +186,9 @@ def format_title_for_platform(
         title_prefix = "🆕 " if title_data.get("is_new") else ""
 
         if show_source:
-            result = f"📰 [{title_data['source_name']}] {title_prefix}{formatted_title}"
+            result = f"[{title_data['source_name']}] {title_prefix}{formatted_title}"
         elif show_keyword and keyword:
-            result = f"*🏷️ [{keyword}]* {title_prefix}{formatted_title}"
+            result = f"*[{keyword}]* {title_prefix}{formatted_title}"
         else:
             result = f"{title_prefix}{formatted_title}"
 
@@ -217,10 +217,10 @@ def format_title_for_platform(
 
         # 构建前缀（来源或关键词）
         if show_source:
-            prefix = f'<span class="source-tag">📰 [{escaped_source_name}]</span> '
+            prefix = f'<span class="source-tag">[{escaped_source_name}]</span> '
         elif show_keyword and keyword:
             escaped_keyword = html_escape(keyword)
-            prefix = f'<span class="keyword-tag">🏷️ [{escaped_keyword}]</span> '
+            prefix = f'<span class="keyword-tag">[{escaped_keyword}]</span> '
         else:
             prefix = ""
 
