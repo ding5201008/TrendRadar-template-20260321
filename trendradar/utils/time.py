@@ -8,10 +8,29 @@
 from datetime import datetime
 from typing import Optional
 
-import pytz
+try:
+    import pytz  # type: ignore
+except ImportError:  # pragma: no cover - optional dependency
+    pytz = None
+
+from zoneinfo import ZoneInfo
 
 # 默认时区常量 - 仅作为 fallback，正常运行时使用 config.yaml 中的 app.timezone
 DEFAULT_TIMEZONE = "Asia/Shanghai"
+
+
+def _resolve_timezone(timezone: str):
+    """优先使用 pytz，缺失时回退到标准库 zoneinfo。"""
+    if pytz is not None:
+        return pytz.timezone(timezone)
+    return ZoneInfo(timezone)
+
+
+def _localize_utc(dt: datetime) -> datetime:
+    """将无时区时间视作 UTC。"""
+    if pytz is not None:
+        return pytz.UTC.localize(dt)
+    return dt.replace(tzinfo=ZoneInfo("UTC"))
 
 
 def get_configured_time(timezone: str = DEFAULT_TIMEZONE) -> datetime:
@@ -25,10 +44,14 @@ def get_configured_time(timezone: str = DEFAULT_TIMEZONE) -> datetime:
         带时区信息的当前时间
     """
     try:
-        tz = pytz.timezone(timezone)
-    except pytz.UnknownTimeZoneError:
+        tz = _resolve_timezone(timezone)
+    except Exception as exc:
         print(f"[警告] 未知时区 '{timezone}'，使用默认时区 {DEFAULT_TIMEZONE}")
-        tz = pytz.timezone(DEFAULT_TIMEZONE)
+        try:
+            tz = _resolve_timezone(DEFAULT_TIMEZONE)
+        except Exception:
+            print(f"[警告] 默认时区加载失败: {exc}，退回系统本地时间")
+            return datetime.now().astimezone()
     return datetime.now(tz)
 
 
@@ -133,7 +156,7 @@ def format_iso_time_friendly(
                 else:
                     dt = datetime.fromisoformat(iso_time.split(".")[0])
                 # 假设为 UTC 时间
-                dt = pytz.UTC.localize(dt)
+                dt = _localize_utc(dt)
             except ValueError:
                 pass
 
@@ -149,9 +172,9 @@ def format_iso_time_friendly(
 
         # 转换到目标时区
         try:
-            target_tz = pytz.timezone(timezone)
-        except pytz.UnknownTimeZoneError:
-            target_tz = pytz.timezone(DEFAULT_TIMEZONE)
+            target_tz = _resolve_timezone(timezone)
+        except Exception:
+            target_tz = _resolve_timezone(DEFAULT_TIMEZONE)
 
         dt_local = dt.astimezone(target_tz)
 
@@ -217,7 +240,7 @@ def is_within_days(
                     dt = datetime.fromisoformat(iso_time.replace("T", " ").split(".")[0])
                 else:
                     dt = datetime.fromisoformat(iso_time.split(".")[0])
-                dt = pytz.UTC.localize(dt)
+                dt = _localize_utc(dt)
             except ValueError:
                 pass
 
@@ -271,7 +294,7 @@ def calculate_days_old(iso_time: str, timezone: str = DEFAULT_TIMEZONE) -> Optio
                     dt = datetime.fromisoformat(iso_time.replace("T", " ").split(".")[0])
                 else:
                     dt = datetime.fromisoformat(iso_time.split(".")[0])
-                dt = pytz.UTC.localize(dt)
+                dt = _localize_utc(dt)
             except ValueError:
                 pass
 

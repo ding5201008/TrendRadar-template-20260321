@@ -1,17 +1,13 @@
 name: Check In
 
-# ✅ 签到续期：运行此 workflow 可重置 1 个自然月计时，保持 "Get Hot News" 正常运行
-# ✅ Renewal: Run this workflow to reset the 1-calendar-month timer and keep "Get Hot News" active
+# ✅ 手动续期 / 清理：运行此 workflow 可立即重置 365 天计时，保持 "Get Hot News" 正常运行
+# ✅ Manual renewal / cleanup: Run this workflow to reset the 365-day timer immediately and keep "Get Hot News" active
 #
 # 📌 操作方法 / How to use:
 #   1. 点击 "Run workflow" 按钮 / Click "Run workflow" button
-#   2. 每 1 个自然月内至少运行一次 / Run at least once every calendar month
+#   2. 正常情况下无需手动运行，到期会自动续期 / Usually no manual run is needed because renewal is automatic on expiry
 
 on:
-  schedule:
-    # 每月 1 日 UTC 00:00 自动签到续期
-    # Automatically renew on the 1st day of every month at 00:00 UTC
-    - cron: "0 0 1 * *"
   workflow_dispatch:
 
 jobs:

@@ -42,7 +42,7 @@ def render_rss_html_content(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>RSS 订阅内容</title>
+        <title>📰 RSS 订阅内容</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <style>
             * { box-sizing: border-box; }
@@ -295,10 +295,10 @@ def render_rss_html_content(
                 <div class="save-buttons">
                     <button class="save-btn" onclick="saveAsImage()">保存为图片</button>
                 </div>
-                <div class="header-title">RSS 订阅内容</div>
+                <div class="header-title">📰 RSS 订阅内容</div>
                 <div class="header-info">
                     <div class="info-item">
-                        <span class="info-label">订阅条目</span>
+                        <span class="info-label">🧾 订阅条目</span>
                         <span class="info-value">"""
 
     html += f"{total_count} 条"
@@ -306,7 +306,7 @@ def render_rss_html_content(
     html += """</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">生成时间</span>
+                        <span class="info-label">🕒 生成时间</span>
                         <span class="info-value">"""
 
     # 使用提供的时间函数或默认 datetime.now
@@ -342,12 +342,15 @@ def render_rss_html_content(
         html += f"""
                 <div class="feed-group">
                     <div class="feed-header">
-                        <div class="feed-name">{escaped_feed_name}</div>
-                        <div class="feed-count">{len(items)} 条</div>
+                        <div class="feed-name">📰 {escaped_feed_name}</div>
+                        <div class="feed-count">📦 {len(items)} 条</div>
                     </div>"""
 
         for item in items:
-            escaped_title = html_escape(item.get("title", ""))
+            raw_title = item.get("title", "")
+            if not raw_title or not raw_title.strip():
+                raw_title = item.get("url", "") or item.get("feed_name", "")
+            escaped_title = html_escape(raw_title)
             url = item.get("url", "")
             published_at = item.get("published_at", "")
             author = item.get("author", "")
@@ -358,10 +361,10 @@ def render_rss_html_content(
                         <div class="rss-meta">"""
 
             if published_at:
-                html += f'<span class="rss-time">{html_escape(published_at)}</span>'
+                html += f'<span class="rss-time">🕒 {html_escape(published_at)}</span>'
 
             if author:
-                html += f'<span class="rss-author">by {html_escape(author)}</span>'
+                html += f'<span class="rss-author">✍️ {html_escape(author)}</span>'
 
             html += """
                         </div>

@@ -11,8 +11,8 @@ Deploy in <strong>30 seconds</strong> — Say goodbye to endless scrolling, only
 [![GitHub Stars](https://img.shields.io/github/stars/sansan0/TrendRadar?style=flat-square&logo=github&color=yellow)](https://github.com/sansan0/TrendRadar/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/sansan0/TrendRadar?style=flat-square&logo=github&color=blue)](https://github.com/sansan0/TrendRadar/network/members)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v6.6.1-blue.svg)](https://github.com/sansan0/TrendRadar)
-[![MCP](https://img.shields.io/badge/MCP-v4.0.2-green.svg)](https://github.com/sansan0/TrendRadar)
+[![Version](https://img.shields.io/badge/version-v6.7.0-blue.svg)](https://github.com/sansan0/TrendRadar)
+[![MCP](https://img.shields.io/badge/MCP-v4.0.4-green.svg)](https://github.com/sansan0/TrendRadar)
 [![RSS](https://img.shields.io/badge/RSS-Feed_Support-orange.svg?style=flat-square&logo=rss&logoColor=white)](https://github.com/sansan0/TrendRadar)
 [![AI Translation](https://img.shields.io/badge/AI-Multi--Language-purple.svg?style=flat-square)](https://github.com/sansan0/TrendRadar)
 
@@ -193,14 +193,12 @@ This contributes to the sustainable maintenance of the project and the growth of
 - **Tip**: Check [Changelog] to understand specific [Features]
 
 
-### 2026/03/28 - v6.6.0
+### 2026/05/15 - v6.7.0
 
-- **HTML Report Browser Enhancement**: Open the HTML report in a browser to unlock widescreen layout, Tab navigation for keyword groups and standalone sections, real-time title search, and more — email clients still show the original narrow layout with zero regression
-- **Dark Mode**: One-click toggle for dark theme with automatic preference persistence, ideal for nighttime reading
-- **One-Click Copy**: Hover over a news number to copy the title and link instantly for quick sharing
-- **Export Optimization**: Full-page and segmented screenshots merged into a dropdown export button; screenshots auto-revert to clean layout
-- **Keyboard Shortcuts**: `W` widescreen toggle, `D` dark mode, `/` search, `?` view all shortcuts
-- **Reading Progress Bar**: Real-time reading progress displayed at the top of the page
+- **Markdown Export**: New Markdown option in the report export dropdown — generate structured text with clickable links, perfect for LLM processing and cross-platform sharing ([#1121](https://github.com/sansan0/TrendRadar/issues/1121))
+- **RSS GUID Deduplication**: RSS storage now supports GUID field with priority order guid > url, preventing duplicate entries caused by URL changes for the same article
+- **Empty Title Protection**: Full-chain fallback logic across parser, renderer, and translation backfill ensures items without titles still display properly
+- **Translation Quality Enhancement**: Translation prompt now enforces numbered-item ordering preservation; empty translation results no longer overwrite original titles
 
 ### 2026/02/09 - mcp-v4.0.0
 
@@ -213,6 +211,15 @@ This contributes to the sustainable maintenance of the project and the growth of
 
 <details>
 <summary>👉 Click to expand: <strong>Historical Updates</strong></summary>
+
+### 2026/03/28 - v6.6.0
+
+- **HTML Report Browser Enhancement**: Open the HTML report in a browser to unlock widescreen layout, Tab navigation for keyword groups and standalone sections, real-time title search, and more — email clients still show the original narrow layout with zero regression
+- **Dark Mode**: One-click toggle for dark theme with automatic preference persistence, ideal for nighttime reading
+- **One-Click Copy**: Hover over a news number to copy the title and link instantly for quick sharing
+- **Export Optimization**: Full-page and segmented screenshots merged into a dropdown export button; screenshots auto-revert to clean layout
+- **Keyboard Shortcuts**: `W` widescreen toggle, `D` dark mode, `/` search, `?` view all shortcuts
+- **Reading Progress Bar**: Real-time reading progress displayed at the top of the page
 
 ### 2026/03/12 - v6.5.0
 
@@ -1071,7 +1078,7 @@ Open the pushed HTML report in a browser to unlock an enhanced experience (email
 > 💡 For storage configuration details, see [Configuration Details - Storage Configuration](#11-storage-configuration-v400-new)
 
 ### **Multi-Platform Deployment**
-- **GitHub Actions**: Cloud automated operations (1-calendar-month check-in cycle + remote cloud storage)
+- **GitHub Actions**: Cloud automated operations (7-day check-in cycle + remote cloud storage)
 - **Docker Deployment**: Supports multi-architecture containerized operation
 - **Local Running**: Python environment direct execution
 
@@ -1152,7 +1159,7 @@ Transform from "algorithm recommendation captivity" to "actively getting the inf
 
 * **Features**: Data is stored in **Remote Cloud Storage** (no longer written to Git repo)
 * **Storage**: Configure cloud storage service (e.g. Cloudflare R2, Alibaba Cloud OSS, Tencent Cloud COS, etc.)
-* **Note**: Requires periodic check-in renewal (every calendar month)
+* **Note**: Requires periodic check-in renewal (every 7 days)
 
 ### 1️⃣ Step 1: Get project code
 
@@ -1885,11 +1892,11 @@ Templates support two placeholders:
 
    **v4.0.0 Important Change**: Introduced the "Activity Detection" mechanism; GitHub Actions need periodic check-ins to maintain operation.
 
-   - **Running Cycle**: Valid for **1 calendar month**—service will automatically suspend when countdown ends.
-   - **Renewal Method**: Manually trigger the "Check In" workflow on the Actions page to reset the 1-calendar-month validity period. This repository also runs Check In automatically every month.
+   - **Running Cycle**: Valid for **7 days**—service will automatically suspend when countdown ends.
+   - **Renewal Method**: Manually trigger the "Check In" workflow on the Actions page to reset the 7-day validity period.
    - **Operation Path**: `Actions` → `Check In` → `Run workflow`
    - **Design Philosophy**:
-     - If you forget for 1 calendar month, maybe you don't really need it. Letting it stop is a digital detox, freeing you from the constant impact.
+     - If you forget for 7 days, maybe you don't really need it. Letting it stop is a digital detox, freeing you from the constant impact.
      - GitHub Actions is a valuable public computing resource. The check-in mechanism aims to prevent wasted computing cycles, ensuring resources are allocated to truly active users who need them. Thank you for your understanding and support.
 
    ---

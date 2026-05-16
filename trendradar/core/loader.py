@@ -5,10 +5,10 @@
 负责从 YAML 配置文件和环境变量加载配置。
 """
 
-import os
 import copy
+import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 import yaml
 
@@ -182,8 +182,8 @@ def _load_weight_config(config_data: Dict) -> Dict:
     }
 
 
-def _load_rss_feeds(config_data: Dict, config_path: Optional[str] = None) -> list:
-    """加载 RSS 源列表，支持从外部 YAML 文件引用和默认启用名单过滤。"""
+def _load_rss_feeds(config_data: Dict, config_path: Optional[str] = None) -> List[Dict]:
+    """加载 RSS 源配置，支持外部清单和默认启用名单。"""
     rss = config_data.get("rss", {})
     feeds = rss.get("feeds", [])
     feeds_file = rss.get("feeds_file", "").strip()
@@ -192,18 +192,25 @@ def _load_rss_feeds(config_data: Dict, config_path: Optional[str] = None) -> lis
     if not feeds_file:
         return feeds
 
-    config_dir = Path(config_path).parent if config_path else Path("config")
+    config_dir = (
+        Path(config_path).parent.resolve()
+        if config_path
+        else Path(__file__).resolve().parents[2] / "config"
+    )
     feeds_path = (config_dir / feeds_file).resolve()
 
     if not feeds_path.exists():
         print(f"[警告] RSS feeds_file 不存在: {feeds_path}，回退到 config.yaml 内置 feeds")
         return feeds
 
-    with open(feeds_path, "r", encoding="utf-8") as f:
-        external_config = yaml.safe_load(f) or {}
+    try:
+        with open(feeds_path, "r", encoding="utf-8") as f:
+            external_config = yaml.safe_load(f) or {}
+    except Exception as e:
+        print(f"[警告] RSS feeds_file 读取失败: {feeds_path} ({e})，回退到 config.yaml 内置 feeds")
+        return feeds
 
-    external_rss = external_config.get("rss", {})
-    external_feeds = external_rss.get("feeds", [])
+    external_feeds = external_config.get("rss", {}).get("feeds", [])
     if not isinstance(external_feeds, list):
         print(f"[警告] RSS feeds_file 格式错误: {feeds_path}，回退到 config.yaml 内置 feeds")
         return feeds
@@ -626,7 +633,7 @@ def load_config(config_path: Optional[str] = None) -> Dict[str, Any]:
 
     # 平台配置
     platforms_config = config_data.get("platforms", {})
-    config["PLATFORMS"] = platforms_config.get("sources", [])
+    config["PLATFORMS"] = [p for p in platforms_config.get("sources", []) if p.get("enabled", True)]
 
     # RSS 配置
     config["RSS"] = _load_rss_config(config_data, config_path)
