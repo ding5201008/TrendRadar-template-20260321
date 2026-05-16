@@ -875,6 +875,69 @@ class SQLiteStorageMixin:
                         if existing:
                             existing_id = existing[0]
                             existing_title = existing[1]
+                            conflict_id = None
+
+                            if item.url:
+                                cursor.execute("""
+                                    SELECT id FROM rss_items
+                                    WHERE url = ? AND feed_id = ? AND id != ?
+                                """, (item.url, feed_id, existing_id))
+                                conflict = cursor.fetchone()
+                                if conflict:
+                                    conflict_id = conflict[0]
+
+                            if conflict_id is not None:
+                                cursor.execute("""
+                                    SELECT title, url, guid, published_at, summary, author,
+                                           first_crawl_time, last_crawl_time, crawl_count
+                                    FROM rss_items
+                                    WHERE id = ?
+                                """, (conflict_id,))
+                                conflict_row = cursor.fetchone()
+                                if conflict_row:
+                                    merged_title = existing_title or conflict_row[0] or item.title
+                                    if merged_title.strip().startswith(("http://", "https://", "//")):
+                                        merged_title = conflict_row[0] or existing_title or item.title
+
+                                    merged_url = item.url or conflict_row[1] or ""
+                                    merged_guid = item_guid or conflict_row[2] or ""
+                                    merged_published_at = item.published_at or conflict_row[3] or ""
+                                    merged_summary = item.summary or conflict_row[4] or ""
+                                    merged_author = item.author or conflict_row[5] or ""
+                                    merged_first_crawl_time = conflict_row[6]
+                                    merged_last_crawl_time = data.crawl_time
+                                    merged_crawl_count = max(conflict_row[8], 1) + 1
+
+                                    cursor.execute("DELETE FROM rss_items WHERE id = ?", (existing_id,))
+                                    cursor.execute("""
+                                        UPDATE rss_items SET
+                                            title = ?,
+                                            url = ?,
+                                            guid = CASE WHEN ? != '' THEN ? ELSE guid END,
+                                            published_at = ?,
+                                            summary = ?,
+                                            author = ?,
+                                            first_crawl_time = ?,
+                                            last_crawl_time = ?,
+                                            crawl_count = ?,
+                                            updated_at = ?
+                                        WHERE id = ?
+                                    """, (
+                                        merged_title,
+                                        merged_url,
+                                        merged_guid, merged_guid,
+                                        merged_published_at,
+                                        merged_summary,
+                                        merged_author,
+                                        merged_first_crawl_time,
+                                        merged_last_crawl_time,
+                                        merged_crawl_count,
+                                        now_str,
+                                        conflict_id,
+                                    ))
+                                    updated_count += 1
+                                    continue
+
                             update_title = item.title
                             if (update_title and update_title.strip().startswith(("http://", "https://", "//"))
                                     and existing_title and not existing_title.strip().startswith(("http://", "https://", "//"))):
