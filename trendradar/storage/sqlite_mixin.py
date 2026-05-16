@@ -82,6 +82,9 @@ class SQLiteStorageMixin:
         """
         schema_path = self._get_schema_path(db_type)
 
+        if db_type == "rss":
+            self._prepare_rss_schema_compat(conn)
+
         if schema_path.exists():
             with open(schema_path, "r", encoding="utf-8") as f:
                 schema_sql = f.read()
@@ -100,6 +103,20 @@ class SQLiteStorageMixin:
             self._migrate_rss_schema(conn)
 
         conn.commit()
+
+    def _prepare_rss_schema_compat(self, conn: sqlite3.Connection) -> None:
+        """
+        在执行完整 RSS schema 之前，先兼容旧库结构。
+
+        旧库的 rss_items 表没有 guid 列，而新 schema 会创建依赖 guid 的索引。
+        如果先执行 schema，再迁移列，SQLite 会在创建索引时直接失败。
+        """
+        cursor = conn.execute("""
+            SELECT name FROM sqlite_master
+            WHERE type = 'table' AND name = 'rss_items'
+        """)
+        if cursor.fetchone():
+            self._migrate_rss_schema(conn)
 
     def _migrate_rss_schema(self, conn: sqlite3.Connection) -> None:
         """迁移 rss_items 表结构（为已有数据库添加 guid 列）"""
@@ -961,7 +978,7 @@ class SQLiteStorageMixin:
             # 获取所有 RSS 数据
             cursor.execute("""
                 SELECT i.id, i.title, i.feed_id, f.name as feed_name,
-                       i.url, i.published_at, i.summary, i.author,
+                       i.url, i.guid, i.published_at, i.summary, i.author,
                        i.first_crawl_time, i.last_crawl_time, i.crawl_count
                 FROM rss_items i
                 LEFT JOIN rss_feeds f ON i.feed_id = f.id
@@ -990,13 +1007,14 @@ class SQLiteStorageMixin:
                     feed_id=feed_id,
                     feed_name=feed_name,
                     url=row[4] or "",
-                    published_at=row[5] or "",
-                    summary=row[6] or "",
-                    author=row[7] or "",
-                    crawl_time=row[9],
-                    first_time=row[8],
-                    last_time=row[9],
-                    count=row[10],
+                    guid=row[5] or "",
+                    published_at=row[6] or "",
+                    summary=row[7] or "",
+                    author=row[8] or "",
+                    crawl_time=row[10],
+                    first_time=row[9],
+                    last_time=row[10],
+                    count=row[11],
                 ))
 
             # 获取最新的抓取时间
@@ -1116,7 +1134,7 @@ class SQLiteStorageMixin:
             # 获取该时间的 RSS 数据
             cursor.execute("""
                 SELECT i.id, i.title, i.feed_id, f.name as feed_name,
-                       i.url, i.published_at, i.summary, i.author,
+                       i.url, i.guid, i.published_at, i.summary, i.author,
                        i.first_crawl_time, i.last_crawl_time, i.crawl_count
                 FROM rss_items i
                 LEFT JOIN rss_feeds f ON i.feed_id = f.id
@@ -1146,13 +1164,14 @@ class SQLiteStorageMixin:
                     feed_id=feed_id,
                     feed_name=feed_name,
                     url=row[4] or "",
-                    published_at=row[5] or "",
-                    summary=row[6] or "",
-                    author=row[7] or "",
-                    crawl_time=row[9],
-                    first_time=row[8],
-                    last_time=row[9],
-                    count=row[10],
+                    guid=row[5] or "",
+                    published_at=row[6] or "",
+                    summary=row[7] or "",
+                    author=row[8] or "",
+                    crawl_time=row[10],
+                    first_time=row[9],
+                    last_time=row[10],
+                    count=row[11],
                 ))
 
             # 获取失败的源（针对最新一次抓取）
