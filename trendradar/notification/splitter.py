@@ -120,11 +120,6 @@ def _safe_new_batch(
     return last
 
 
-def _content_fits(content: str, footer_size: int, max_bytes: int) -> bool:
-    """判断正文内容叠加 footer 后是否仍在平台限制内。"""
-    return len(content.encode("utf-8")) + footer_size < max_bytes
-
-
 # 默认批次大小配置
 DEFAULT_BATCH_SIZES = {
     "dingtalk": 20000,
@@ -216,99 +211,125 @@ def split_content_into_batches(
 
     # 构建头部信息
     base_header = ""
-    
-    # 准备 AI 分析统计行（如果存在）
-    ai_stats_line = ""
-    if ai_stats and ai_stats.get("analyzed_news", 0) > 0:
-        analyzed_news = ai_stats.get("analyzed_news", 0)
-        total_news = ai_stats.get("total_news", 0)
-        ai_mode = ai_stats.get("ai_mode", "")
 
-        # 构建分析数显示：如果被截断则显示 "实际分析数/总可分析数"
-        if total_news > analyzed_news:
-            news_display = f"{analyzed_news}/{total_news}"
-        else:
-            news_display = str(analyzed_news)
-
-        # 如果 AI 模式与推送模式不同，显示模式标识
-        mode_suffix = ""
-        if ai_mode and ai_mode != mode:
-            mode_map = {
-                "daily": "全天汇总",
-                "current": "当前榜单",
-                "incremental": "增量分析"
-            }
-            mode_label = mode_map.get(ai_mode, ai_mode)
-            mode_suffix = f" ({mode_label})"
-
-        if format_type in ("wework", "bark", "ntfy", "feishu", "dingtalk"):
-            ai_stats_line = f"**🤖 AI 分析数：** {news_display}{mode_suffix}\n"
-        elif format_type == "slack":
-            ai_stats_line = f"*🤖 AI 分析数：* {news_display}{mode_suffix}\n"
-        elif format_type == "telegram":
-            ai_stats_line = f"🤖 AI 分析数： {news_display}{mode_suffix}\n"
-
-    # 构建统一的头部（总是显示总新闻数、时间和类型）
-    if format_type in ("wework", "bark"):
-        base_header = f"**🧮 总新闻数：** {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"**🕒 时间：** {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"**📌 类型：** {report_type}\n\n"
+    # 格式化粗体标记
+    if format_type == "slack":
+        b_s, b_e = "*", "*"
     elif format_type == "telegram":
-        base_header = f"🧮 总新闻数： {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"🕒 时间： {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"📌 类型： {report_type}\n\n"
-    elif format_type == "ntfy":
-        base_header = f"**🧮 总新闻数：** {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"**🕒 时间：** {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"**📌 类型：** {report_type}\n\n"
-    elif format_type == "feishu":
-        base_header = f"**🧮 总新闻数：** {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"**🕒 时间：** {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"**📌 类型：** {report_type}\n\n"
-        base_header += "---\n\n"
-    elif format_type == "dingtalk":
-        base_header = f"**🧮 总新闻数：** {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"**🕒 时间：** {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"**📌 类型：** {report_type}\n\n"
-        base_header += "---\n\n"
-    elif format_type == "slack":
-        base_header = f"*🧮 总新闻数：* {total_titles}\n"
-        base_header += ai_stats_line
-        base_header += f"*🕒 时间：* {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-        base_header += f"*📌 类型：* {report_type}\n\n"
+        b_s, b_e = "", ""
+    else:
+        b_s, b_e = "**", "**"
+
+    # 提取统计数据
+    hotlist_total = report_data.get("hotlist_total", total_hotlist_count)
+    new_count = report_data.get("total_new_count", 0)
+    platform_total = report_data.get("platform_total", 0)
+    failed_count = len(report_data.get("failed_ids", []))
+    platform_success = platform_total - failed_count if platform_total else 0
+    rss_matched = report_data.get("rss_matched_count", 0)
+    rss_total_items = report_data.get("rss_total_count", 0)
+    rss_source_total = report_data.get("rss_source_total", 0)
+    rss_source_failed = report_data.get("rss_source_failed", 0)
+    rss_source_success = max(0, rss_source_total - rss_source_failed)
+
+    # === 上半部分：数据统计 ===
+
+    # 1. 总新闻
+    rss_new_count = sum(len(stat.get("titles", [])) for stat in (rss_new_items or []))
+    total_new = new_count + rss_new_count
+    total_news_line = f"{b_s}总新闻：{b_e} {total_titles} 条"
+    if total_new > 0:
+        total_news_line += f"（新增 {new_count} + {rss_new_count}）"
+    base_header += f"{total_news_line}\n"
+
+    # 2. 热榜
+    hotlist_info = f"{b_s}热榜：{b_e} {total_hotlist_count}/{hotlist_total}"
+    if platform_total > 0:
+        hotlist_info += f"（平台 {platform_success}/{platform_total}）"
+    base_header += f"{hotlist_info}\n"
+
+    # 3. RSS
+    if rss_source_total > 0:
+        rss_info = f"{b_s}RSS：{b_e} {rss_matched}/{rss_total_items}（源 {rss_source_success}/{rss_source_total}）"
+        base_header += f"{rss_info}\n"
+
+    # 4. 独立展示区（仅在有数据时显示）
+    if standalone_data:
+        sa_platform_count = sum(len(p.get("items", [])) for p in standalone_data.get("platforms", []))
+        sa_rss_count = sum(len(f.get("items", [])) for f in standalone_data.get("rss_feeds", []))
+        sa_total = sa_platform_count + sa_rss_count
+        if sa_total > 0:
+            sa_parts = []
+            if sa_platform_count > 0:
+                sa_parts.append(f"热榜 {sa_platform_count}")
+            if sa_rss_count > 0:
+                sa_parts.append(f"RSS {sa_rss_count}")
+            base_header += f"{b_s}独立展示：{b_e} {sa_total} 条（{' + '.join(sa_parts)}）\n"
+
+    # 5. AI 分析（仅在有分析数据时显示）
+    standalone_analyzed = ai_stats.get("standalone_analyzed", 0) if ai_stats else 0
+    ai_has_data = ai_stats and (ai_stats.get("analyzed_news", 0) > 0 or standalone_analyzed > 0)
+    if ai_has_data:
+        hotlist_analyzed = ai_stats.get("hotlist_analyzed", 0)
+        rss_analyzed = ai_stats.get("rss_analyzed", 0)
+        ai_mode_val = ai_stats.get("ai_mode", "")
+
+        ai_parts = [str(hotlist_analyzed)]
+        if ai_stats.get("include_rss", True):
+            ai_parts.append(str(rss_analyzed))
+        if ai_stats.get("include_standalone", False):
+            ai_parts.append(str(standalone_analyzed))
+        ai_display = " + ".join(ai_parts) if sum(int(p) for p in ai_parts) > 0 else "0"
+
+        mode_suffix = ""
+        if ai_mode_val and ai_mode_val != mode:
+            mode_map = {"daily": "全天汇总", "current": "当前榜单", "incremental": "增量分析"}
+            mode_suffix = f" [{mode_map.get(ai_mode_val, ai_mode_val)}]"
+
+        base_header += f"{b_s}AI 分析：{b_e} {ai_display}{mode_suffix}\n"
+
+    # === 空行分隔 ===
+    base_header += "\n"
+
+    # === 下半部分：元信息 ===
+    base_header += f"{b_s}类型：{b_e} {report_type}\n"
+    base_header += f"{b_s}时间：{b_e} {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
+
+    top_words = report_data.get("stats", [])[:3]
+    if top_words:
+        topics = " | ".join(f"{s['word']}({s['count']})" for s in top_words)
+        base_header += f"{b_s}最热话题：{b_e} {topics}\n"
+
+    if format_type in ("feishu", "dingtalk"):
+        base_header += "\n---\n\n"
+    else:
+        base_header += "\n"
 
     base_footer = ""
     if format_type in ("wework", "bark"):
-        base_footer = f"\n\n\n> 🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        base_footer = f"\n\n\n> 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
         if update_info:
-            base_footer += f"\n> 🚀 TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
+            base_footer += f"\n> TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
     elif format_type == "telegram":
-        base_footer = f"\n\n🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        base_footer = f"\n\n更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
         if update_info:
-            base_footer += f"\n🚀 TrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}"
+            base_footer += f"\nTrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}"
     elif format_type == "ntfy":
-        base_footer = f"\n\n> 🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        base_footer = f"\n\n> 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
         if update_info:
-            base_footer += f"\n> 🚀 TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
+            base_footer += f"\n> TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
     elif format_type == "feishu":
-        base_footer = f"\n\n<font color='grey'>🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}</font>"
+        base_footer = f"\n\n<font color='grey'>更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}</font>"
         if update_info:
-            base_footer += f"\n<font color='grey'>🚀 TrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}</font>"
+            base_footer += f"\n<font color='grey'>TrendRadar 发现新版本 {update_info['remote_version']}，当前 {update_info['current_version']}</font>"
     elif format_type == "dingtalk":
-        base_footer = f"\n\n> 🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
+        base_footer = f"\n\n> 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}"
         if update_info:
-            base_footer += f"\n> 🚀 TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
+            base_footer += f"\n> TrendRadar 发现新版本 **{update_info['remote_version']}**，当前 **{update_info['current_version']}**"
     elif format_type == "slack":
-        base_footer = f"\n\n_🕒 更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}_"
+        base_footer = f"\n\n_更新时间：{now.strftime('%Y-%m-%d %H:%M:%S')}_"
         if update_info:
-            base_footer += f"\n_🚀 TrendRadar 发现新版本 *{update_info['remote_version']}*，当前 *{update_info['current_version']}_"
-
-    base_footer_size = len(base_footer.encode("utf-8"))
+            base_footer += f"\n_TrendRadar 发现新版本 *{update_info['remote_version']}*，当前 *{update_info['current_version']}_"
 
     # 根据 display_mode 选择统计标题
     stats_title = "热点词汇统计" if display_mode == "keyword" else "热点新闻统计"
@@ -377,7 +398,10 @@ def split_content_into_batches(
 
         # 添加统计标题
         test_content = current_batch + actual_stats_header
-        if _content_fits(test_content, base_footer_size, max_bytes):
+        if (
+            len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+            < max_bytes
+        ):
             current_batch = test_content
             current_batch_has_content = True
         else:
@@ -497,7 +521,10 @@ def split_content_into_batches(
             word_with_first_news = word_header + first_news_line
             test_content = current_batch + word_with_first_news
 
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if (
+                len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                >= max_bytes
+            ):
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -546,7 +573,10 @@ def split_content_into_batches(
                     news_line += "\n"
 
                 test_content = current_batch + news_line
-                if not _content_fits(test_content, base_footer_size, max_bytes):
+                if (
+                    len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                    >= max_bytes
+                ):
                     if current_batch_has_content:
                         _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                     current_batch = _safe_new_batch(
@@ -575,7 +605,10 @@ def split_content_into_batches(
                     separator = f"\n\n"
 
                 test_content = current_batch + separator
-                if _content_fits(test_content, base_footer_size, max_bytes):
+                if (
+                    len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                    < max_bytes
+                ):
                     current_batch = test_content
 
         return current_batch, current_batch_has_content, batches
@@ -620,7 +653,10 @@ def split_content_into_batches(
                 new_header = f"🆕 *本次新增热点新闻* (共 {report_data['total_new_count']} 条)\n\n"
 
         test_content = current_batch + new_header
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if (
+            len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+            >= max_bytes
+        ):
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -683,7 +719,10 @@ def split_content_into_batches(
             source_with_first_news = source_header + first_news_line
             test_content = current_batch + source_with_first_news
 
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if (
+                len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                >= max_bytes
+            ):
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -729,7 +768,10 @@ def split_content_into_batches(
                 news_line = f"  {j + 1}. {formatted_title}\n"
 
                 test_content = current_batch + news_line
-                if not _content_fits(test_content, base_footer_size, max_bytes):
+                if (
+                    len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                    >= max_bytes
+                ):
                     if current_batch_has_content:
                         _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                     current_batch = _safe_new_batch(
@@ -768,7 +810,10 @@ def split_content_into_batches(
 
         # 尝试将 AI 内容添加到当前批次
         test_content = current_batch + ai_separator + ai_content
-        if _content_fits(test_content, base_footer_size, max_bytes):
+        if (
+            len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+            < max_bytes
+        ):
             current_batch = test_content
             current_batch_has_content = True
         else:
@@ -776,8 +821,9 @@ def split_content_into_batches(
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
 
             # AI 内容可能很长，按行拆分成多个批次
+            footer_size = len(base_footer.encode("utf-8"))
             header_size = len(base_header.encode("utf-8"))
-            available = max_bytes - base_footer_size - header_size
+            available = max_bytes - footer_size - header_size
 
             ai_lines = ai_content.split("\n")
             current_batch = base_header
@@ -786,7 +832,7 @@ def split_content_into_batches(
             for line in ai_lines:
                 test_line = line + "\n" if not line.endswith("\n") else line
                 test_content = current_batch + test_line
-                if not _content_fits(test_content, base_footer_size, max_bytes) and current_batch_has_content:
+                if len(test_content.encode("utf-8")) + footer_size >= max_bytes and current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                     current_batch = base_header + test_line
                 else:
@@ -802,8 +848,8 @@ def split_content_into_batches(
             return current_batch, current_batch_has_content, batches
         return _process_standalone_section(
             standalone_data, format_type, feishu_separator, base_header, base_footer,
-            max_bytes, base_footer_size, current_batch, current_batch_has_content,
-            batches, timezone, rank_threshold, add_separator
+            max_bytes, current_batch, current_batch_has_content, batches, timezone,
+            rank_threshold, add_separator
         )
 
     # 定义处理 RSS 统计的函数
@@ -813,8 +859,8 @@ def split_content_into_batches(
             return current_batch, current_batch_has_content, batches
         return _process_rss_stats_section(
             rss_items, format_type, feishu_separator, base_header, base_footer,
-            max_bytes, base_footer_size, current_batch, current_batch_has_content,
-            batches, timezone, add_separator
+            max_bytes, current_batch, current_batch_has_content, batches, timezone,
+            add_separator
         )
 
     # 定义处理 RSS 新增的函数
@@ -824,8 +870,8 @@ def split_content_into_batches(
             return current_batch, current_batch_has_content, batches
         return _process_rss_new_titles_section(
             rss_new_items, format_type, feishu_separator, base_header, base_footer,
-            max_bytes, base_footer_size, current_batch, current_batch_has_content,
-            batches, timezone, add_separator
+            max_bytes, current_batch, current_batch_has_content, batches, timezone,
+            add_separator
         )
 
     # 按 region_order 顺序处理各区域
@@ -901,7 +947,10 @@ def split_content_into_batches(
             failed_header = f"\n---\n\n⚠️ **数据获取失败的平台：**\n\n"
 
         test_content = current_batch + failed_header
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if (
+            len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+            >= max_bytes
+        ):
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -921,7 +970,10 @@ def split_content_into_batches(
                 failed_line = f"  • {id_value}\n"
 
             test_content = current_batch + failed_line
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if (
+                len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8"))
+                >= max_bytes
+            ):
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -947,7 +999,6 @@ def _process_rss_stats_section(
     base_header: str,
     base_footer: str,
     max_bytes: int,
-    base_footer_size: int,
     current_batch: str,
     current_batch_has_content: bool,
     batches: List[str],
@@ -1011,7 +1062,7 @@ def _process_rss_stats_section(
 
     # 添加 RSS 标题
     test_content = current_batch + rss_header
-    if _content_fits(test_content, base_footer_size, max_bytes):
+    if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) < max_bytes:
         current_batch = test_content
         current_batch_has_content = True
     else:
@@ -1100,7 +1151,7 @@ def _process_rss_stats_section(
         word_with_first_news = word_header + first_news_line
         test_content = current_batch + word_with_first_news
 
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -1137,7 +1188,7 @@ def _process_rss_stats_section(
                 news_line += "\n"
 
             test_content = current_batch + news_line
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -1166,7 +1217,7 @@ def _process_rss_stats_section(
                 separator = "\n\n"
 
             test_content = current_batch + separator
-            if _content_fits(test_content, base_footer_size, max_bytes):
+            if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) < max_bytes:
                 current_batch = test_content
 
     return current_batch, current_batch_has_content, batches
@@ -1179,7 +1230,6 @@ def _process_rss_new_titles_section(
     base_header: str,
     base_footer: str,
     max_bytes: int,
-    base_footer_size: int,
     current_batch: str,
     current_batch_has_content: bool,
     batches: List[str],
@@ -1228,35 +1278,35 @@ def _process_rss_new_titles_section(
     if add_separator and current_batch_has_content:
         # 需要添加分割线
         if format_type in ("wework", "bark"):
-            new_header = f"\n\n\n\n🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"\n\n\n\n🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "telegram":
-            new_header = f"\n\n🆕 📰 RSS 本次新增 (共 {total_items} 条)\n\n"
+            new_header = f"\n\n🆕 RSS 本次新增 (共 {total_items} 条)\n\n"
         elif format_type == "ntfy":
-            new_header = f"\n\n🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"\n\n🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "feishu":
-            new_header = f"\n{feishu_separator}\n\n🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"\n{feishu_separator}\n\n🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "dingtalk":
-            new_header = f"\n---\n\n🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"\n---\n\n🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "slack":
-            new_header = f"\n\n🆕 📰 *RSS 本次新增* (共 {total_items} 条)\n\n"
+            new_header = f"\n\n🆕 *RSS 本次新增* (共 {total_items} 条)\n\n"
     else:
         # 不需要分割线（第一个区域）
         if format_type in ("wework", "bark"):
-            new_header = f"🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "telegram":
-            new_header = f"🆕 📰 RSS 本次新增 (共 {total_items} 条)\n\n"
+            new_header = f"🆕 RSS 本次新增 (共 {total_items} 条)\n\n"
         elif format_type == "ntfy":
-            new_header = f"🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "feishu":
-            new_header = f"🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "dingtalk":
-            new_header = f"🆕 📰 **RSS 本次新增** (共 {total_items} 条)\n\n"
+            new_header = f"🆕 **RSS 本次新增** (共 {total_items} 条)\n\n"
         elif format_type == "slack":
-            new_header = f"🆕 📰 *RSS 本次新增* (共 {total_items} 条)\n\n"
+            new_header = f"🆕 *RSS 本次新增* (共 {total_items} 条)\n\n"
 
     # 添加 RSS 新增标题
     test_content = current_batch + new_header
-    if not _content_fits(test_content, base_footer_size, max_bytes):
+    if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
         if current_batch_has_content:
             _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
         current_batch = _safe_new_batch(
@@ -1313,7 +1363,7 @@ def _process_rss_new_titles_section(
         source_with_first_news = source_header + first_news_line
         test_content = current_batch + source_with_first_news
 
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -1349,7 +1399,7 @@ def _process_rss_new_titles_section(
             news_line = f"  {j + 1}. {formatted_title}\n"
 
             test_content = current_batch + news_line
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -1428,7 +1478,6 @@ def _process_standalone_section(
     base_header: str,
     base_footer: str,
     max_bytes: int,
-    base_footer_size: int,
     current_batch: str,
     current_batch_has_content: bool,
     batches: List[str],
@@ -1507,7 +1556,7 @@ def _process_standalone_section(
 
     # 添加区块标题
     test_content = current_batch + section_header
-    if _content_fits(test_content, base_footer_size, max_bytes):
+    if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) < max_bytes:
         current_batch = test_content
         current_batch_has_content = True
     else:
@@ -1549,7 +1598,7 @@ def _process_standalone_section(
         platform_with_first = platform_header + first_item_line
         test_content = current_batch + platform_with_first
 
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -1568,7 +1617,7 @@ def _process_standalone_section(
             item_line = _format_standalone_platform_item(items[j], j + 1, format_type, rank_threshold)
 
             test_content = current_batch + item_line
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -1592,17 +1641,17 @@ def _process_standalone_section(
         # RSS 源标题
         feed_header = ""
         if format_type in ("wework", "bark"):
-            feed_header = f"📰 **{feed_name}** ({len(items)} 条):\n\n"
+            feed_header = f"**{feed_name}** ({len(items)} 条):\n\n"
         elif format_type == "telegram":
-            feed_header = f"📰 {feed_name} ({len(items)} 条):\n\n"
+            feed_header = f"{feed_name} ({len(items)} 条):\n\n"
         elif format_type == "ntfy":
-            feed_header = f"📰 **{feed_name}** ({len(items)} 条):\n\n"
+            feed_header = f"**{feed_name}** ({len(items)} 条):\n\n"
         elif format_type == "feishu":
-            feed_header = f"📰 **{feed_name}** ({len(items)} 条):\n\n"
+            feed_header = f"**{feed_name}** ({len(items)} 条):\n\n"
         elif format_type == "dingtalk":
-            feed_header = f"📰 **{feed_name}** ({len(items)} 条):\n\n"
+            feed_header = f"**{feed_name}** ({len(items)} 条):\n\n"
         elif format_type == "slack":
-            feed_header = f"📰 *{feed_name}* ({len(items)} 条):\n\n"
+            feed_header = f"*{feed_name}* ({len(items)} 条):\n\n"
 
         # 构建第一条 RSS
         first_item_line = ""
@@ -1613,7 +1662,7 @@ def _process_standalone_section(
         feed_with_first = feed_header + first_item_line
         test_content = current_batch + feed_with_first
 
-        if not _content_fits(test_content, base_footer_size, max_bytes):
+        if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
             if current_batch_has_content:
                 _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
             current_batch = _safe_new_batch(
@@ -1632,7 +1681,7 @@ def _process_standalone_section(
             item_line = _format_standalone_rss_item(items[j], j + 1, format_type, timezone)
 
             test_content = current_batch + item_line
-            if not _content_fits(test_content, base_footer_size, max_bytes):
+            if len(test_content.encode("utf-8")) + len(base_footer.encode("utf-8")) >= max_bytes:
                 if current_batch_has_content:
                     _safe_append_batch(batches, current_batch, base_footer, max_bytes, base_header)
                 current_batch = _safe_new_batch(
@@ -1673,7 +1722,8 @@ def _format_standalone_platform_item(item: Dict, index: int, format_type: str, r
     # 如果没有 ranks 列表，用单个 rank 构造
     if not ranks and rank > 0:
         ranks = [rank]
-    rank_display = format_rank_display(ranks, rank_threshold, format_type) if ranks else ""
+    rank_timeline = item.get("rank_timeline")
+    rank_display = format_rank_display(ranks, rank_threshold, format_type, rank_timeline=rank_timeline) if ranks else ""
 
     # 构建时间显示（用 ~ 连接范围，与热点词汇统计区一致）
     # 将 HH-MM 格式转换为 HH:MM 格式
