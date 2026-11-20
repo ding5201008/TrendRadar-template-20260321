@@ -6,16 +6,23 @@
 
 最快<strong>30秒</strong>部署的热点助手 —— 告别无效刷屏，只看真正关心的新闻资讯
 
-<a href="https://trendshift.io/repositories/14726" target="_blank"><img src="https://trendshift.io/api/badge/repositories/14726" alt="sansan0%2FTrendRadar | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+<a href="https://trendradar.sandev.cc/zh/" title="TrendRadar 官方网站"><strong>🌐 官方网站</strong></a> · <a href="https://trendradar.sandev.cc/zh/docs/quick-start/" title="TrendRadar 官网文档"><strong>📖 官网文档</strong></a> · <a href="https://trendradar.sandev.cc/zh/docs/self-hosted-sources/" title="AI 自建热榜数据源"><strong>AI 自建热榜数据源</strong></a>
+
+<a href="https://trendshift.io/repositories/14726?utm_source=trendshift-badge&amp;utm_medium=badge&amp;utm_campaign=badge-trendshift-14726" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/trendshift/repositories/14726/monthly" alt="sansan0%2FTrendRadar | Trendshift" width="250" height="55"/></a>
 
 
 [![GitHub Stars](https://img.shields.io/github/stars/sansan0/TrendRadar?style=flat-square&logo=github&color=yellow)](https://github.com/sansan0/TrendRadar/stargazers)
 [![GitHub Forks](https://img.shields.io/github/forks/sansan0/TrendRadar?style=flat-square&logo=github&color=blue)](https://github.com/sansan0/TrendRadar/network/members)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=flat-square)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v6.10.0-blue.svg)](https://github.com/sansan0/TrendRadar)
-[![MCP](https://img.shields.io/badge/MCP-v4.1.0-green.svg)](https://github.com/sansan0/TrendRadar)
-[![RSS](https://img.shields.io/badge/RSS-订阅源支持-orange.svg?style=flat-square&logo=rss&logoColor=white)](https://github.com/sansan0/TrendRadar)
-[![AI翻译](https://img.shields.io/badge/AI-多语言推送-purple.svg?style=flat-square)](https://github.com/sansan0/TrendRadar)
+[![Version](https://img.shields.io/badge/version-v6.11.0-blue.svg)](https://github.com/sansan0/TrendRadar)
+[![MCP](https://img.shields.io/badge/MCP-v4.1.1-green.svg)](https://github.com/sansan0/TrendRadar)
+[![Docker Pulls](https://img.shields.io/docker/pulls/wantcat/trendradar?style=flat-square&logo=docker&logoColor=white&label=TrendRadar%20Pulls&color=2496ED)](https://hub.docker.com/r/wantcat/trendradar)
+[![Docker Pulls](https://img.shields.io/docker/pulls/wantcat/trendradar-mcp?style=flat-square&logo=docker&logoColor=white&label=MCP%20Pulls&color=2496ED)](https://hub.docker.com/r/wantcat/trendradar-mcp)
+[![RSS](https://img.shields.io/badge/RSS-订阅源支持-orange.svg?style=flat-square&logo=rss&logoColor=white)](#rss-订阅源支持v450-新增)
+[![AI翻译](https://img.shields.io/badge/AI-多语言推送-purple.svg?style=flat-square)](#ai-多语言翻译v520-新增)
+[![MCP Support](https://img.shields.io/badge/MCP-AI分析支持-FF6B6B?style=flat-square&logo=ai&logoColor=white)](#-mcp-客户端)
+[![AI分析推送](https://img.shields.io/badge/AI-分析推送-FF6B6B?style=flat-square&logo=openai&logoColor=white)](#ai-分析推送v500-新增)
+[![AI智能筛选](https://img.shields.io/badge/AI-智能筛选新闻-9B59B6?style=flat-square&logo=openai&logoColor=white)](#ai-智能筛选新闻v650-新增)
 
 [![企业微信通知](https://img.shields.io/badge/企业微信-通知-00D4AA?style=flat-square)](https://work.weixin.qq.com/)
 [![个人微信通知](https://img.shields.io/badge/个人微信-通知-00D4AA?style=flat-square)](https://weixin.qq.com/)
@@ -29,12 +36,11 @@
 [![通用Webhook](https://img.shields.io/badge/通用-Webhook-607D8B?style=flat-square&logo=webhook&logoColor=white)](#)
 
 
-[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-自动化-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/sansan0/TrendRadar)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-自动化-2088FF?style=flat-square&logo=github-actions&logoColor=white)](#-快速开始)
 [![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-部署-4285F4?style=flat-square&logo=github&logoColor=white)](https://sansan0.github.io/TrendRadar)
-[![Docker](https://img.shields.io/badge/Docker-部署-2496ED?style=flat-square&logo=docker&logoColor=white)](https://hub.docker.com/r/wantcat/trendradar)
-[![MCP Support](https://img.shields.io/badge/MCP-AI分析支持-FF6B6B?style=flat-square&logo=ai&logoColor=white)](https://modelcontextprotocol.io/)
-[![AI分析推送](https://img.shields.io/badge/AI-分析推送-FF6B6B?style=flat-square&logo=openai&logoColor=white)](#)
-[![AI智能筛选](https://img.shields.io/badge/AI-智能筛选新闻-9B59B6?style=flat-square&logo=openai&logoColor=white)](#)
+[![Docker](https://img.shields.io/badge/Docker-部署-2496ED?style=flat-square&logo=docker&logoColor=white)](#6-docker-部署)
+[![本地部署](https://img.shields.io/badge/本地-部署-28A745?style=flat-square&logo=python&logoColor=white)](#local-deploy)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare_Pages-部署-F38020?style=flat-square&logo=cloudflare&logoColor=white)](#cloudflare-deploy)
 
 </div>
 
@@ -57,8 +63,8 @@
 |   |   |   |
 |:---:|:---:|:---:|
 | [🚀 **快速开始**](#-快速开始) | [AI 智能分析](#-ai-智能分析) | [⚙️ **配置详解**](#配置详解) |
-| [Docker部署](#6-docker-部署) | [MCP客户端](#-mcp-客户端) | [📝 **更新日志**](#-更新日志) |
-| [🎯 **核心功能**](#-核心功能) | [☕ **支持项目**](#-支持项目) | [📚 **项目相关**](#-项目相关) |
+| [Docker部署](#6-docker-部署) / [本地部署](#local-deploy) | [MCP客户端](#-mcp-客户端) | [📝 **更新日志**](#-更新日志) |
+| [🎯 **核心功能**](#-核心功能) | [💬 **社区交流**](#community) | [📚 **项目相关**](#-项目相关) |
 
 </div>
 
@@ -184,30 +190,23 @@
 
 ## 🪄 赞助商
 
-<div align="center">
+> **[ApiSmart](https://www.apismart.ai/)** 提供统一的 AI 模型 API，支持智能路由、故障切换与按量计费。通过兼容接口接入多种模型，适用于热点分析、内容生成与自动化工作流，让 AI 应用集成更省心。
 
-> **虚位以待**
-
-</div>
+<a href="https://www.apismart.ai/"><img src="_image/banner-apismart.webp" alt="ApiSmart 一站式 AI 模型 API，支持文本、图像与视频，智能路由、按量计费" width="100%"></a>
 
 <br>
 
-<a name="-支持项目"></a>
+> **[DeepSider API](https://www.deepsiderapi.com/?utm_source=trendradar)** 提供统一的 AI API 接入服务，一个 API Key 即可调用 GPT、Claude、Gemini、DeepSeek 等主流模型。非号池，非逆向，大厂官方渠道。支持按量计费与实时用量监控，方便为你的自动化工作流接入 AI。
 
-### ❤️ 觉得好用？支持一下
+<a href="https://www.deepsiderapi.com/?utm_source=trendradar"><img src="_image/banner-deepsider.webp" alt="DeepSider API：一个 API Key，连接全球主流 AI 模型；非号池，非逆向，大厂官方渠道" width="100%"></a>
 
-> 若 TrendRadar 曾为你捕捉价值，不妨为它注入动力，助其持续进化
->
-> 金额随意，1 元也是对开源的鼓励。欢迎在赞赏时备注留言 (´▽`ʃ♡ƪ)
+<br>
 
-<div align="center">
+<p align="center">
+<a href="https://trendradar.sandev.cc/zh/sponsors/">有意赞助？点击查看赞助与合作详情</a>
+</p>
 
-| 微信赞赏 | 支付宝赞赏 |
-|:---:|:---:|
-| <img src="https://cdn-1258574687.cos.ap-shanghai.myqcloud.com/img/%2F2025%2F07%2F17%2F2ae0a88d98079f7e876c2b4dc85233c6-9e8025.JPG" width="240" alt="微信赞赏"> | <img src="https://cdn-1258574687.cos.ap-shanghai.myqcloud.com/img/%2F2025%2F07%2F17%2F1ed4f20ab8e35be51f8e84c94e6e239b4-fe4947.JPG" width="240" alt="支付宝赞赏"> |
-
-</div>
-
+<br>
 
 ### 🤝 二次开发与引用
 
@@ -216,22 +215,47 @@
 这将有助于项目的持续维护和社区发展，感谢你的尊重与支持！❤️
 
 
-### 💬 交流与反馈
+<a name="community"></a>
+
+### 💬 社区交流
 
 - **GitHub Issues**：适合具体的技术问题。提问时请提供完整信息（截图、错误日志等），有助于快速定位。
 - **公众号交流**：建议优先在相关文章下的留言区交流。若需后台提问，**先点赞/推荐**文章是最好的"敲门砖"，我在后台都能感受到这份心意哟 (´▽`ʃ♡ƪ)。
-- **QQ 群交流**：关注公众号，回复「**交流群**」即可加入。无论你是 AI 小白还是硬核开发者，想求助技术问题还是分享折腾心得，这里都欢迎你。群里主打互助交流和灵感碰撞，入群请先看群公告；提问时描述清楚问题、附上截图，群友有空就会帮忙，大家的实战经验往往比我一个人更快更全面 🤝
 
 > **友情提示**：
 > 本项目为开源分享，非商业产品。把作者当朋友而非客服，沟通效率会更高哦！
 
 <div align="center">
 
-|公众号关注 |
-|:---:|
-| <img src="_image/weixin.png" width="500" title="硅基茶水间"/> |
+| 公众号关注 | QQ 群交流 |
+| :---: | :---: |
+| <img src="_image/weixin.png" width="500" title="硅基茶水间"/> | <img src="_image/qq-group.png" alt="TrendRadar QQ 群二维码，群号 1007671021" width="150"/> |
 
 </div>
+
+<br>
+
+<a name="-支持项目"></a>
+
+### 🧩 作者的另一款工具：SanFrame
+
+<table role="presentation">
+<tr>
+<td width="96" align="center">
+<a href="https://ocr.sandev.cc/zh/"><img src="_image/sanframe-icon.webp" alt="SanFrame" width="72" height="72"></a>
+</td>
+<td align="left">
+<strong>剪贴板与资料管理工作台</strong><br>
+把文字、截图和文件引用收在本机，用标签、组合与搜索管理零散资料。支持滚动截图与标注、离线 OCR、PDF 批量识别，也可接入模型识别表格和公式。
+<br><br>
+通过内置 AI 助手或 MCP，让 AI 查找资料、保存讨论要点、分组打标签并置顶，访问范围与操作权限由你掌握。
+<br><br>
+支持 Windows / macOS 局域网互传与按规则同步，并可与 Android 传输端互传文字、图片和文件。软件免费，无需账号。
+<br><br>
+<a href="https://ocr.sandev.cc/zh/"><strong>了解 SanFrame →</strong></a>
+</td>
+</tr>
+</table>
 
 <br>
 
@@ -241,12 +265,11 @@
 - **提示**：建议查看【历史更新】，明确具体的【功能内容】
 
 
-### 2026/05/15 - v6.7.0
+### 2026/10/13 - v6.11.0
 
-- **Markdown 导出**：报告导出下拉菜单新增 Markdown 格式，一键生成带链接的结构化文本，方便 LLM 二次加工和跨平台分享（[#1121](https://github.com/sansan0/TrendRadar/issues/1121)）
-- **RSS guid 去重**：RSS 存储新增 guid 字段，去重优先级改为 guid > url，解决同一文章因 URL 变化导致重复入库的问题
-- **空标题防护**：解析器、渲染层、翻译回填全链路增加空标题兜底逻辑，确保无标题条目也能正常显示
-- **翻译质量增强**：翻译提示词要求保留编号顺序，空翻译结果不再覆盖原始标题
+- **中英文配置编辑**：可视化编辑器支持中英文切换，并提供英文配置模板，方便按熟悉的语言设置运行参数、关键词和调度规则
+- **更多部署选择**：可选配置 Cloudflare Pages 自动部署，抓取完成后自动发布网页报告；补充基于 `uv` 的本地部署说明，方便在本机运行
+- **抓取与配置稳定性**：RSS 临时请求失败时仅立即重试一次；修复时间解析中的小数秒与时区偏移、全局过滤正则和 AI 自定义参数传递，并避免远程存储检查失败时误建空库
 
 ### 2026/02/09 - mcp-v4.0.0
 
@@ -259,6 +282,32 @@
 
 <details>
 <summary>👉 点击展开：<strong>历史更新</strong></summary>
+
+### 2026/06/19 - v6.10.0
+
+- **AI 翻译分批处理**：大量标题翻译时自动分批请求，避免单次请求超限导致翻译失败
+- **模块拆分重构**：拆分 context.py 和 \_\_main\_\_.py，AI 筛选流水线独立为 filter_pipeline 模块，职责更清晰、维护更方便
+- **修复飞书来源标签显示**：修复飞书卡片中来源标签和 AI 独立源点速览被 CommonMark 吞掉不显示的问题
+
+### 2026/06/02 - v6.9.0
+
+- **热榜域名安全校验**：新增 `expected_domain` 配置项，校验返回数据链接的域名合法性，不匹配时自动丢弃数据并警告，有效防范链接劫持或数据篡改
+- **自定义热榜 API 地址**：支持自部署 newsnow 并配置 `api_url` 使用自己的数据源
+
+### 2026/05/23 - v6.8.0
+
+- **HTML 报告全面增强**：新增报告元数据展示（生成时间、数据来源、版本号）、暗色模式自动适配、Tab 栏交互优化、趋势箭头可视化，浏览器阅读体验大幅提升
+- **版本检查 CDN 多源回退**：版本检查接口支持 GitHub → jsDelivr → Cloudflare 等多个 CDN 源自动回退，国内网络环境也能稳定获取更新提示
+- **展示区域开关生效**：HTML 报告和邮件现在正确尊重 `display.regions.ai_analysis` 和 `display.regions.standalone` 开关，关闭即不渲染
+- **导出按钮修复**：修复导出按钮点击后下拉菜单图标消失的问题
+- **Markdown 导出修复**：修复 HTML 报告 Markdown 导出中 JS 换行符转义错误
+
+### 2026/05/15 - v6.7.0
+
+- **Markdown 导出**：报告导出下拉菜单新增 Markdown 格式，一键生成带链接的结构化文本，方便 LLM 二次加工和跨平台分享（[#1121](https://github.com/sansan0/TrendRadar/issues/1121)）
+- **RSS guid 去重**：RSS 存储新增 guid 字段，去重优先级改为 guid > url，解决同一文章因 URL 变化导致重复入库的问题
+- **空标题防护**：解析器、渲染层、翻译回填全链路增加空标题兜底逻辑，确保无标题条目也能正常显示
+- **翻译质量增强**：翻译提示词要求保留编号顺序，空翻译结果不再覆盖原始标题
 
 ### 2026/03/28 - v6.6.0
 
@@ -998,6 +1047,8 @@ frequency_words.txt 文件增加了一个【必须词】功能，使用 + 号
 
 提供基于 Web 的图形化配置界面，无需手动编辑 YAML 文件，通过表单即可完成所有配置项的修改与导出。
 
+支持中英文界面切换和英文配置模板，方便按熟悉的语言设置运行参数、关键词和调度规则。
+
 👉 **在线体验**：[https://sansan0.github.io/TrendRadar/](https://sansan0.github.io/TrendRadar/)
 
 <img src="/_image/editor.png" alt="可视化配置编辑器" width="80%">
@@ -1181,6 +1232,37 @@ ai_translation:
 >
 > ⚠️ 原 GitHub Actions 自动存储功能已下线（该方案曾导致 GitHub 服务器负载过高，影响平台稳定性）。
 
+<a id="cloudflare-deploy"></a>
+
+### ☁️ 自动部署到 Cloudflare Pages（可选 · 国内访问更快）
+
+GitHub Pages 在国内访问较慢，[Cloudflare Pages](https://pages.cloudflare.com/) 的访问速度更友好。配置完成后，GitHub Actions 每次运行都会自动把最新的 `index.html` 推送到 Cloudflare Pages，无需任何手动操作。
+
+> **前置条件**：已完成 [GitHub Actions 部署](#-快速开始) 并能正常生成网页报告。
+
+**① 创建 Cloudflare Pages 项目**
+
+登录 [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → 选择 **Upload assets（直接上传）**，填写一个项目名称（例如 `trendradar`，请记住它），随意上传一个文件完成首次创建（后续会被 Actions 自动覆盖）。
+
+**② 获取 API Token 与 Account ID**
+
+- **API Token**：右上角头像 → **My Profile** → **API Tokens** → **Create Token** → **Create Custom Token**，权限选择 `Account` → `Cloudflare Pages` → `Edit`，创建后复制 Token（仅显示一次）。
+- **Account ID**：在 **Workers & Pages** 页面右侧栏即可找到（或任意域名 **Overview** 页面右下角）。
+
+**③ 在 GitHub 仓库添加 3 个 Secrets**
+
+进入仓库 `Settings` → `Secrets and variables` → `Actions` → `New repository secret`，依次添加：
+
+| Name（名称） | Secret（值） |
+|:---|:---|
+| `CLOUDFLARE_API_TOKEN` | 上一步创建的 API Token |
+| `CLOUDFLARE_ACCOUNT_ID` | 你的 Cloudflare Account ID |
+| `CLOUDFLARE_PROJECT_NAME` | Cloudflare Pages 项目名（如 `trendradar`） |
+
+配置完成后，下一次 GitHub Actions 运行即会自动部署，访问地址为 `https://<项目名>.pages.dev`。
+
+> 💡 **说明**：三个 Secret 缺任意一个都会自动跳过 Cloudflare 部署，不会影响新闻推送等其它功能；如需绑定自定义域名，可在 Pages 项目的 **Custom domains** 中设置。
+
 ### **减少 APP 依赖**
 
 从"被算法推荐绑架"变成"主动获取自己想要的信息"
@@ -1203,17 +1285,50 @@ ai_translation:
 
 ### 请选择适合你的部署方式
 
-#### 🅰️ 方案一：Docker 部署（推荐 🔥）
+#### Ⓐ 方案一：Docker 部署（推荐 🔥）
 
 * **特点**：比 GitHub Actions 更稳定，数据本地存储（无需配置云存储）
 * **适用**：有自己的服务器、NAS 或长期运行的电脑
 * **注意**：你需要阅读了解下方的基础配置流程，然后跳转到 Docker 教程进行部署。
 
-#### 🅱️ 方案二：GitHub Actions 部署（本章节内容 ⬇️）
+#### Ⓑ 方案二：GitHub Actions 部署（本章节内容 ⬇️）
 
 * **特点**：无服务器，数据存储在 **远程云存储**（推荐配置）
 * **适用**：没有服务器的用户，利用 GitHub 免费资源
 * **注意**：需配置云存储以获得完整体验，且需定期签到续期
+
+<a id="local-deploy"></a>
+
+#### Ⓒ 方案三：本地部署（uv）
+
+* **特点**：直接在本机运行，无需 Docker，适合开发调试或无 Docker 环境的用户
+* **适用**：Windows / Mac / Linux 用户（无需预装 Python，uv 会自动管理）
+* **步骤**：
+
+   **1. 安装 uv**（如已安装可跳过，无需预装 Python）
+
+   ```bash
+   # macOS / Linux
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Windows (PowerShell)
+   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
+
+   **2. 克隆并运行**
+
+   ```bash
+   git clone https://github.com/sansan0/TrendRadar.git
+   cd TrendRadar
+   uv sync          # 自动安装 Python 和项目依赖
+   uv run python -m trendradar
+   ```
+
+   > 💡 **提示**：
+   > - uv 会自动管理 Python 版本，无需手动安装 Python
+   > - Windows 用户也可以双击 `setup-windows.bat` 一键安装依赖
+   > - Mac 用户可使用 `bash setup-mac.sh`
+   > - 运行前请先编辑 `config/config.yaml` 填写推送渠道等配置，参考下方的基础配置流程
 
 ### 1️⃣ 第一步：获取项目代码
 
@@ -1302,84 +1417,45 @@ ai_translation:
    <summary>👉 点击展开：<strong>飞书机器人</strong>（消息显示相对友好）</summary>
    <br>
 
+   > **注意**：原「飞书机器人助手 (BotBuilder)」将于 2026 年 6 月 30 日下线，请使用下方的**群组自定义机器人**方式配置。已有的 BotBuilder webhook 地址将失效，需要重新配置。
+
    若启用 **AI 分析**，飞书推送偶发（约 5% 概率）会有数分钟延迟（推测为平台对 AI 生成内容的合规性审核）。
 
    **GitHub Secret 配置（⚠️ Name 名称必须严格一致）：**
    - **Name（名称）**：`FEISHU_WEBHOOK_URL`（请复制粘贴此名称，不要手打）
-   - **Secret（值）**：你的飞书机器人 Webhook 地址（该链接开头类似 https://www.feishu.cn/flow/api/trigger-webhook/********）
-   <br>
+   - **Secret（值）**：你的飞书自定义机器人 Webhook 地址（格式：`https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxxxxx`）
 
-   有两个方案，**方案一**配置简单，**方案二**配置复杂(但是稳定推送)
+   **配置步骤：**
 
-   其中方案一，由 **ziventian**发现并提供建议，在这里感谢他，默认是个人推送，也可以配置群组推送操作[#97](https://github.com/sansan0/TrendRadar/issues/97) ，
+   1. 进入目标群组，在群组右上角点击 **更多** 按钮，并点击 **设置**。
 
-   **方案一：**
+   ![进入群设置](_image/feishu-bot/step1-group-settings.png)
 
-   > 对部分人存在额外操作，否则会报"系统错误"。需要手机端搜索下机器人，然后开启飞书机器人应用(该建议来自于网友，可参考)
+   2. 在右侧 **设置** 界面，点击 **群机器人**。
 
-   1. 电脑浏览器打开 https://botbuilder.feishu.cn/home/my-command
+   ![点击群机器人](_image/feishu-bot/step2-group-bot.png)
 
-   2. 点击"新建机器人指令" 
+   3. 在 **群机器人** 界面点击 **添加机器人**。
 
-   3. 点击"选择触发器"，往下滑动，点击"Webhook 触发"
+   4. 在 **添加机器人** 对话框，找到并点击 **自定义机器人**。
 
-   4. 此时你会看到"Webhook 地址"，把这个链接先复制到本地记事本暂存，继续接下来的操作
+   ![选择自定义机器人](_image/feishu-bot/step3-custom-bot.png)
 
-   5. "参数"里面放上下面的内容，然后点击"完成"
+   5. 设置自定义机器人的头像、名称（如"TrendRadar 热点监控"）与描述，并点击 **添加**。
 
-   ```json
-   {
-     "message_type": "text",
-     "content": {
-       "text": "{{内容}}"
-     }
-   }
-   ```
+   ![设置机器人信息](_image/feishu-bot/step4-set-name.png)
 
-   6. 点击"选择操作" > "通过官方机器人发消息"
+   6. 获取自定义机器人的 **webhook 地址**，并点击 **完成**。
 
-   7. 消息标题填写"TrendRadar 热点监控"
+   > ⚠️ 请妥善保存此 webhook 地址，不要公布在 GitHub、博客等可公开查阅的网站上，避免地址泄露后被恶意调用发送垃圾消息。
 
-   8. 最关键的部分来了，点击 + 按钮，选择"Webhook 触发"，然后按照下面的图片摆放
+   ![复制 webhook 地址](_image/feishu-bot/step5-webhook-url.png)
 
-   ![飞书机器人配置示例](_image/feishu.png)
+   7. 将复制的 Webhook 地址配置到 GitHub Secrets 中的 `FEISHU_WEBHOOK_URL`。
 
-   9. 配置完成后，将第 4 步复制的 Webhook 地址配置到 GitHub Secrets 中的 `FEISHU_WEBHOOK_URL`
-
-   <br>
-
-   **方案二：**
-
-   1. 电脑浏览器打开 https://botbuilder.feishu.cn/home/my-app
-
-   2. 点击"新建机器人应用"
-
-   3. 进入创建的应用后，点击"流程设计" > "创建流程" > "选择触发器"
-
-   4. 往下滑动，点击"Webhook 触发"
-
-   5. 此时你会看到"Webhook 地址"，把这个链接先复制到本地记事本暂存，继续接下来的操作
-
-   6. "参数"里面放上下面的内容，然后点击"完成"
-
-   ```json
-   {
-     "message_type": "text",
-     "content": {
-       "text": "{{内容}}"
-     }
-   }
-   ```
-
-   7. 点击"选择操作" > "发送飞书消息"，勾选 "群消息"，然后点击下面的输入框，点击"我管理的群组"（如果没有群组，你可以在飞书 app 上创建群组）
-
-   8. 消息标题填写"TrendRadar 热点监控"
-
-   9. 最关键的部分来了，点击 + 按钮，选择"Webhook 触发"，然后按照下面的图片摆放
-
-   ![飞书机器人配置示例](_image/feishu.png)
-
-   10. 配置完成后，将第 5 步复制的 Webhook 地址配置到 GitHub Secrets 中的 `FEISHU_WEBHOOK_URL`
+   > 💡 配置完成后，你可以在群组名称右侧点击机器人图片，进入自定义机器人详情页，管理配置信息。
+   >
+   > 📖 官方文档：[自定义机器人使用指南](https://open.feishu.cn/document/client-docs/bot-v3/add-custom-bot)
 
    </details>
 
@@ -3829,7 +3905,9 @@ MCP Inspector 是官方调试工具，用于测试 MCP 连接：
 - https://github.com/sansan0/bilibili-comment-analyzer
 
 
-[![Star History Chart](https://api.star-history.com/svg?repos=sansan0/TrendRadar&type=Date)](https://www.star-history.com/#sansan0/TrendRadar&Date)
+## Star History
+
+[![Star History Chart](https://star-history.dera.page/svg?repos=sansan0/TrendRadar)](https://star-history.dera.page/#sansan0/TrendRadar)
 
 <br>
 

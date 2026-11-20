@@ -82,9 +82,6 @@ class SQLiteStorageMixin:
         """
         schema_path = self._get_schema_path(db_type)
 
-        if db_type == "rss":
-            self._prepare_rss_schema_compat(conn)
-
         if schema_path.exists():
             with open(schema_path, "r", encoding="utf-8") as f:
                 schema_sql = f.read()
@@ -103,20 +100,6 @@ class SQLiteStorageMixin:
             self._migrate_rss_schema(conn)
 
         conn.commit()
-
-    def _prepare_rss_schema_compat(self, conn: sqlite3.Connection) -> None:
-        """
-        在执行完整 RSS schema 之前，先兼容旧库结构。
-
-        旧库的 rss_items 表没有 guid 列，而新 schema 会创建依赖 guid 的索引。
-        如果先执行 schema，再迁移列，SQLite 会在创建索引时直接失败。
-        """
-        cursor = conn.execute("""
-            SELECT name FROM sqlite_master
-            WHERE type = 'table' AND name = 'rss_items'
-        """)
-        if cursor.fetchone():
-            self._migrate_rss_schema(conn)
 
     def _migrate_rss_schema(self, conn: sqlite3.Connection) -> None:
         """迁移 rss_items 表结构（为已有数据库添加 guid 列）"""
@@ -406,6 +389,9 @@ class SQLiteStorageMixin:
                 for rh_row in cursor.fetchall():
                     news_id, rank, crawl_time = rh_row[0], rh_row[1], rh_row[2]
 
+                    if not crawl_time:
+                        continue
+
                     # 构建 ranks 列表（去重，排除脱榜记录 rank=0）
                     if news_id not in rank_history_map:
                         rank_history_map[news_id] = []
@@ -416,7 +402,10 @@ class SQLiteStorageMixin:
                     if news_id not in rank_timeline_map:
                         rank_timeline_map[news_id] = []
                     # 提取时间部分（HH:MM）
-                    time_part = crawl_time.split()[1][:5] if ' ' in crawl_time else crawl_time[:5]
+                    try:
+                        time_part = crawl_time.split()[1][:5] if ' ' in crawl_time else crawl_time[:5]
+                    except (IndexError, AttributeError):
+                        time_part = "??:??"
                     rank_timeline_map[news_id].append({
                         "time": time_part,
                         "rank": rank if rank != 0 else None  # 0 转为 None 表示脱榜
@@ -552,6 +541,9 @@ class SQLiteStorageMixin:
                 for rh_row in cursor.fetchall():
                     news_id, rank, crawl_time = rh_row[0], rh_row[1], rh_row[2]
 
+                    if not crawl_time:
+                        continue
+
                     # 构建 ranks 列表（去重，排除脱榜记录 rank=0）
                     if news_id not in rank_history_map:
                         rank_history_map[news_id] = []
@@ -562,7 +554,10 @@ class SQLiteStorageMixin:
                     if news_id not in rank_timeline_map:
                         rank_timeline_map[news_id] = []
                     # 提取时间部分（HH:MM）
-                    time_part = crawl_time.split()[1][:5] if ' ' in crawl_time else crawl_time[:5]
+                    try:
+                        time_part = crawl_time.split()[1][:5] if ' ' in crawl_time else crawl_time[:5]
+                    except (IndexError, AttributeError):
+                        time_part = "??:??"
                     rank_timeline_map[news_id].append({
                         "time": time_part,
                         "rank": rank if rank != 0 else None  # 0 转为 None 表示脱榜
@@ -875,69 +870,6 @@ class SQLiteStorageMixin:
                         if existing:
                             existing_id = existing[0]
                             existing_title = existing[1]
-                            conflict_id = None
-
-                            if item.url:
-                                cursor.execute("""
-                                    SELECT id FROM rss_items
-                                    WHERE url = ? AND feed_id = ? AND id != ?
-                                """, (item.url, feed_id, existing_id))
-                                conflict = cursor.fetchone()
-                                if conflict:
-                                    conflict_id = conflict[0]
-
-                            if conflict_id is not None:
-                                cursor.execute("""
-                                    SELECT title, url, guid, published_at, summary, author,
-                                           first_crawl_time, last_crawl_time, crawl_count
-                                    FROM rss_items
-                                    WHERE id = ?
-                                """, (conflict_id,))
-                                conflict_row = cursor.fetchone()
-                                if conflict_row:
-                                    merged_title = existing_title or conflict_row[0] or item.title
-                                    if merged_title.strip().startswith(("http://", "https://", "//")):
-                                        merged_title = conflict_row[0] or existing_title or item.title
-
-                                    merged_url = item.url or conflict_row[1] or ""
-                                    merged_guid = item_guid or conflict_row[2] or ""
-                                    merged_published_at = item.published_at or conflict_row[3] or ""
-                                    merged_summary = item.summary or conflict_row[4] or ""
-                                    merged_author = item.author or conflict_row[5] or ""
-                                    merged_first_crawl_time = conflict_row[6]
-                                    merged_last_crawl_time = data.crawl_time
-                                    merged_crawl_count = max(conflict_row[8], 1) + 1
-
-                                    cursor.execute("DELETE FROM rss_items WHERE id = ?", (existing_id,))
-                                    cursor.execute("""
-                                        UPDATE rss_items SET
-                                            title = ?,
-                                            url = ?,
-                                            guid = CASE WHEN ? != '' THEN ? ELSE guid END,
-                                            published_at = ?,
-                                            summary = ?,
-                                            author = ?,
-                                            first_crawl_time = ?,
-                                            last_crawl_time = ?,
-                                            crawl_count = ?,
-                                            updated_at = ?
-                                        WHERE id = ?
-                                    """, (
-                                        merged_title,
-                                        merged_url,
-                                        merged_guid, merged_guid,
-                                        merged_published_at,
-                                        merged_summary,
-                                        merged_author,
-                                        merged_first_crawl_time,
-                                        merged_last_crawl_time,
-                                        merged_crawl_count,
-                                        now_str,
-                                        conflict_id,
-                                    ))
-                                    updated_count += 1
-                                    continue
-
                             update_title = item.title
                             if (update_title and update_title.strip().startswith(("http://", "https://", "//"))
                                     and existing_title and not existing_title.strip().startswith(("http://", "https://", "//"))):
@@ -1041,7 +973,7 @@ class SQLiteStorageMixin:
             # 获取所有 RSS 数据
             cursor.execute("""
                 SELECT i.id, i.title, i.feed_id, f.name as feed_name,
-                       i.url, i.guid, i.published_at, i.summary, i.author,
+                       i.url, i.published_at, i.summary, i.author,
                        i.first_crawl_time, i.last_crawl_time, i.crawl_count
                 FROM rss_items i
                 LEFT JOIN rss_feeds f ON i.feed_id = f.id
@@ -1070,14 +1002,13 @@ class SQLiteStorageMixin:
                     feed_id=feed_id,
                     feed_name=feed_name,
                     url=row[4] or "",
-                    guid=row[5] or "",
-                    published_at=row[6] or "",
-                    summary=row[7] or "",
-                    author=row[8] or "",
-                    crawl_time=row[10],
-                    first_time=row[9],
-                    last_time=row[10],
-                    count=row[11],
+                    published_at=row[5] or "",
+                    summary=row[6] or "",
+                    author=row[7] or "",
+                    crawl_time=row[9],
+                    first_time=row[8],
+                    last_time=row[9],
+                    count=row[10],
                 ))
 
             # 获取最新的抓取时间
@@ -1144,11 +1075,11 @@ class SQLiteStorageMixin:
                         if item.url:
                             historical_urls[feed_id].add(item.url)
 
-            # 检查是否有历史数据
+            # 检查是否有早于当前批次的历史数据
             has_historical_data = any(len(urls) > 0 for urls in historical_urls.values())
             if not has_historical_data:
-                # 第一次抓取，没有"新增"概念
-                return {}
+                # 当天第一次抓取，所有条目都是新增
+                return current_data.items.copy()
 
             # 检测新增
             new_items: Dict[str, List[RSSItem]] = {}
@@ -1197,7 +1128,7 @@ class SQLiteStorageMixin:
             # 获取该时间的 RSS 数据
             cursor.execute("""
                 SELECT i.id, i.title, i.feed_id, f.name as feed_name,
-                       i.url, i.guid, i.published_at, i.summary, i.author,
+                       i.url, i.published_at, i.summary, i.author,
                        i.first_crawl_time, i.last_crawl_time, i.crawl_count
                 FROM rss_items i
                 LEFT JOIN rss_feeds f ON i.feed_id = f.id
@@ -1227,14 +1158,13 @@ class SQLiteStorageMixin:
                     feed_id=feed_id,
                     feed_name=feed_name,
                     url=row[4] or "",
-                    guid=row[5] or "",
-                    published_at=row[6] or "",
-                    summary=row[7] or "",
-                    author=row[8] or "",
-                    crawl_time=row[10],
-                    first_time=row[9],
-                    last_time=row[10],
-                    count=row[11],
+                    published_at=row[5] or "",
+                    summary=row[6] or "",
+                    author=row[7] or "",
+                    crawl_time=row[9],
+                    first_time=row[8],
+                    last_time=row[9],
+                    count=row[10],
                 ))
 
             # 获取失败的源（针对最新一次抓取）
@@ -1689,22 +1619,40 @@ class SQLiteStorageMixin:
 
             # 批量查排名历史（热榜）
             ranks_map: Dict[int, List[int]] = {}
+            rank_timeline_map: Dict[int, List[Dict[str, Any]]] = {}
             if hotlist_news_ids:
                 unique_ids = list(set(hotlist_news_ids))
                 placeholders = ",".join("?" * len(unique_ids))
                 cursor.execute(f"""
-                    SELECT news_item_id, rank FROM rank_history
-                    WHERE news_item_id IN ({placeholders}) AND rank != 0
+                    SELECT news_item_id, rank, crawl_time FROM rank_history
+                    WHERE news_item_id IN ({placeholders})
+                    ORDER BY news_item_id, crawl_time
                 """, unique_ids)
                 for rh_row in cursor.fetchall():
-                    nid, rank = rh_row[0], rh_row[1]
+                    nid, rank, crawl_time = rh_row[0], rh_row[1], rh_row[2]
+
+                    if not crawl_time:
+                        continue
+
                     if nid not in ranks_map:
                         ranks_map[nid] = []
-                    if rank not in ranks_map[nid]:
+                    if rank != 0 and rank not in ranks_map[nid]:
                         ranks_map[nid].append(rank)
+
+                    if nid not in rank_timeline_map:
+                        rank_timeline_map[nid] = []
+                    try:
+                        time_part = crawl_time.split()[1][:5] if ' ' in crawl_time else crawl_time[:5]
+                    except (IndexError, AttributeError):
+                        time_part = "??:??"
+                    rank_timeline_map[nid].append({
+                        "time": time_part,
+                        "rank": rank if rank != 0 else None
+                    })
 
             for item in results:
                 item["ranks"] = ranks_map.get(item["news_item_id"], [item["rank"]])
+                item["rank_timeline"] = rank_timeline_map.get(item["news_item_id"], [])
 
             # RSS 结果（如果有 rss 库）
             try:
